@@ -40,7 +40,7 @@ jobs:
         run: npm run format:check
 
       - name: Run Tests
-        run: npm test -- --reporter=junit --outputFile=test-results.xml
+        run: npm test
 
       - name: Publish Test Report
         uses: dorny/test-reporter@v1
