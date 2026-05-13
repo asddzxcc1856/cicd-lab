@@ -101,11 +101,13 @@ jobs:
 ### 3. Pipeline 設計說明
 
 #### 3.1 觸發條件 (Trigger)
+
 - **Push 事件**：任何分支的 push 都會自動觸發 pipeline
 - **Pull Request**：PR 創建或更新時觸發
 - **並行控制**：同一工作流、同一 ref 的前一個執行會被取消
 
 #### 3.2 執行環境
+
 - **運行系統**：Ubuntu latest
 - **Node.js 版本矩陣**：支援 Node 22 和 24
 - **fail-fast 策略**：設為 false，讓所有版本的測試都執行完成
@@ -113,25 +115,31 @@ jobs:
 #### 3.3 核心檢查步驟 (滿足基本要求)
 
 ##### Step 1: TypeScript 型別檢查
+
 ```bash
 npm run typecheck
 ```
+
 - 執行 `tsc --noEmit` 檢查型別
 - 不生成編譯輸出，只驗證型別正確性
 - 任何型別錯誤都會導致此步驟失敗
 
 ##### Step 2: Prettier 格式檢查
+
 ```bash
 npm run format:check
 ```
+
 - 執行 `prettier --check .` 檢查程式碼格式
 - 檢查範圍包括所有支持的文件(YAML、JSON、TypeScript 等)
 - 忽略 dist/ 和 node_modules/ 目錄
 
 ##### Step 3: 自動化測試
+
 ```bash
 npm test
 ```
+
 - 使用 Vitest 執行測試套件
 - 自動生成 `test-results.xml` (junit 格式)
 - 包含 2 個測試用例：
@@ -156,6 +164,7 @@ npm test
 - **結果位置**：在 GitHub Actions Summary 頁面顯示測試結果
 
 #### 3.5 支持功能
+
 - **Docker 映像建構**：在 release 分支上自動構建 Docker 映像
 - **TAG 計算**：根據分支類型生成不同的映像 TAG
 - **CD 觸發**：成功通過 CI 後自動觸發 CD 流程
@@ -163,6 +172,7 @@ npm test
 ### 4. 配置檔案修改
 
 #### vitest.config.ts
+
 ```typescript
 const config: VitestConfig = {
   test: {
@@ -174,11 +184,13 @@ const config: VitestConfig = {
   }
 };
 ```
+
 - 配置 vitest 生成 junit XML 報告
 - 報告名稱：`test-results.xml`
 - 供 dorny/test-reporter 使用
 
 #### package.json (npm scripts)
+
 ```json
 {
   "typecheck": "tsc --noEmit",
@@ -193,17 +205,18 @@ const config: VitestConfig = {
 
 ### 2.1 工具選擇
 
-| 工具 | 用途 | 原因 |
-|------|------|------|
-| GitHub Actions | CI/CD 自動化 | 原生集成 GitHub，無需額外配置 |
-| TypeScript | 型別檢查 | 專案語言，提供靜態型別安全 |
-| Prettier | 格式檢查 | 統一程式碼風格，自動修復 |
-| Vitest | 測試框架 | 快速、相容 Jest、支援 TypeScript |
-| dorny/test-reporter | 測試報告 | GitHub Actions 官方推薦，整合度高 |
+| 工具                | 用途         | 原因                              |
+| ------------------- | ------------ | --------------------------------- |
+| GitHub Actions      | CI/CD 自動化 | 原生集成 GitHub，無需額外配置     |
+| TypeScript          | 型別檢查     | 專案語言，提供靜態型別安全        |
+| Prettier            | 格式檢查     | 統一程式碼風格，自動修復          |
+| Vitest              | 測試框架     | 快速、相容 Jest、支援 TypeScript  |
+| dorny/test-reporter | 測試報告     | GitHub Actions 官方推薦，整合度高 |
 
 ### 2.2 實作策略
 
 #### 2.2.1 階段式檢查
+
 1. **檢出程式碼** → 建立環境
 2. **安裝依賴** → 快取優化
 3. **靜態檢查** → TypeScript 型別 + Prettier 格式
@@ -212,11 +225,13 @@ const config: VitestConfig = {
 6. **打包部署** → Docker build
 
 #### 2.2.2 失敗處理策略
+
 - 任一檢查失敗 → Pipeline 標記為紅色(失敗)
 - GitHub 阻止不符合檢查的 PR 合併
 - `if: always()` 確保測試報告即使失敗也會發佈
 
 #### 2.2.3 效能優化
+
 - 使用 NPM 快取：加速依賴安裝
 - 矩陣並行測試：同時驗證多個 Node 版本
 - 有條件執行：只在特定版本構建 Docker
@@ -230,6 +245,7 @@ const config: VitestConfig = {
 **測試場景**：正常提交代碼到 `release/1.0.0` 分支
 
 **預期結果**：
+
 - ✅ 代碼檢出成功
 - ✅ Node.js 環境配置完成
 - ✅ 依賴安裝成功
@@ -239,6 +255,7 @@ const config: VitestConfig = {
 - ✅ Docker 映像構建成功
 
 **GitHub Actions 結果頁面顯示**：
+
 ```
 ✓ ci (2/2 - Node 22, Node 24)
   ✓ Checkout
@@ -256,6 +273,7 @@ const config: VitestConfig = {
 ```
 
 **Test Report 顯示**：
+
 ```
 Test Results (jest-junit)
 ├─ Fastify app
@@ -269,6 +287,7 @@ Duration: 270ms
 ### 3.2 截圖說明
 
 **應在 GitHub Actions 頁面查看**：
+
 1. Workflow run 列表（顯示所有執行)
 2. 詳細的 job 執行結果
 3. Test Results 報告卡片
@@ -295,7 +314,8 @@ export function buildApp(options: FastifyServerOptions = {}) {
 
 // 引入型別錯誤
 export function buildApp(options: FastifyServerOptions = {}) {
-  const app: string = Fastify({  // ❌ 不相容的型別
+  const app: string = Fastify({
+    // ❌ 不相容的型別
     logger: options.logger ?? true,
     ...options
   });
@@ -341,7 +361,7 @@ export function buildApp(options: FastifyServerOptions = {}) {
 // 移除尾部換行、使用相反的引號
 import { describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app'
-  
+
 describe("Fastify app", () => {
   it('GET /health returns ok status', async () => {
 ```
@@ -368,6 +388,7 @@ npm run format
 這會執行 `prettier --write .` 自動修復所有格式問題
 
 **修復後的代碼**：
+
 ```typescript
 import { describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app';
@@ -389,7 +410,7 @@ describe('Fastify app', () => {
 ```typescript
 app.get('/', async () => {
   return {
-    message: 'Wrong message',  // ❌ 預期值不符
+    message: 'Wrong message', // ❌ 預期值不符
     version: process.env.APP_VERSION || 'dev'
   };
 });
@@ -410,6 +431,7 @@ Received:
 **Pipeline 狀態**：❌ FAILED (紅色)
 
 **Test Report 顯示**：
+
 ```
 Test Results (jest-junit)
 ├─ Fastify app
@@ -428,7 +450,7 @@ Total: 1 passed, 1 failed
 ```typescript
 app.get('/', async () => {
   return {
-    message: 'CI/CD Lab Fastify app is running',  // ✓ 恢復正確值
+    message: 'CI/CD Lab Fastify app is running', // ✓ 恢復正確值
     version: process.env.APP_VERSION || 'dev'
   };
 });
@@ -450,7 +472,7 @@ app.get('/', async () => {
   - [x] Test Execution
 - [x] 檢查失敗時 Pipeline 標記為失敗 (20%) ✅
 - [x] 測試結果展示在 GitHub Actions (20%) ✅
-  - [x] 使用 `dorny/test-reporter` 
+  - [x] 使用 `dorny/test-reporter`
   - [x] 生成 junit 格式報告
   - [x] 結果可視化顯示
 - [x] 實作方式詳細說明 (20%) ✅
