@@ -11,8 +11,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Hello world action step
         run: echo "Hello World!"
+
       - name: Show current directory
         run: ls -al
 
